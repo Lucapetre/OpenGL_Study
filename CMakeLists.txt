@@ -18,7 +18,7 @@ target_include_directories(glad
 
 # main program
 add_executable(OpenGL_Study
-        main.cpp
+        src/main.cpp
 )
 
 target_link_libraries(OpenGL_Study
