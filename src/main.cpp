@@ -1,17 +1,66 @@
 #include <iostream>
 #include "glad.h"
 #include "glfw3.h"
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-int main() {
-    glfwInit();
-    auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
 
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
+// glfw callbacks
+// --------------
+void frame_buffer_size_callback(GLFWwindow* window, int width, int height);
+
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+int main() {
+
+    // glfw boilerplate
+    // ----------------
+
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // for macOS add the line below
+    // ----------------------------
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+    GLFWwindow* window = glfwCreateWindow(2880, 1800, "OpenGL Study", nullptr, nullptr);
+    if (!window) {
+        std::cerr << "Failed to create GLFW window" << '\n';
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
+    // load OpenGL functions
+    // ---------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << '\n';
+    }
+    glViewport(0, 0, 2800, 1800);
+
+    // render loop
+    // ----------
+    while (!glfwWindowShouldClose(window)) {
+        // input processing
+        // ---------------
+        processInput(window);
+
+        // rendering commands
+        // --------------------
+        glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // check and call events / buffer swaping
+        // ---------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
+
+
+    glfwTerminate();
     return 0;
-    // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
+}
+
+void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+
 }
