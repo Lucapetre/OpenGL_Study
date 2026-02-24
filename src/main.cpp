@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include "glad.h"
 #include "glfw3.h"
 
@@ -36,6 +38,58 @@ int main() {
     }
     glViewport(0, 0, 2800, 1800);
 
+    // vertex input
+    // -----------
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f, 0.5f, 0.0f
+    };
+
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // vertex attributes linking
+    // -------------------------
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+
+
+    // vertex shader code
+    // ------------------
+    std::ifstream vertexShaderFile("../shaders/shader.vert");
+    std::stringstream vertexShaderBuffer;
+    vertexShaderBuffer << vertexShaderFile.rdbuf();
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    std::string vertexShaderCode = vertexShaderBuffer.str();
+    const char* vertexSourceCode = vertexShaderCode.c_str();
+    glShaderSource(vertexShader, 1, &vertexSourceCode, NULL);
+    glCompileShader(vertexShader);
+
+    // fragment shader code
+    // --------------------
+    std::ifstream fragmentShaderFile("../shaders/shader.frag");
+    std::stringstream fragmentShaderBuffer;
+    fragmentShaderBuffer << fragmentShaderFile.rdbuf();
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    std::string fragmentShaderCode = fragmentShaderBuffer.str();
+    const char* fragmentSourceCode = fragmentShaderCode.c_str();
+    glShaderSource(fragmentShader, 1, &fragmentSourceCode, NULL);
+    glCompileShader(fragmentShader);
+
+    // shader program code
+    // -------------------
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    glUseProgram(shaderProgram);
+
     // render loop
     // ----------
     while (!glfwWindowShouldClose(window)) {
@@ -47,14 +101,14 @@ int main() {
         // --------------------
         glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // check and call events / buffer swaping
         // ---------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-
 
     glfwTerminate();
     return 0;
