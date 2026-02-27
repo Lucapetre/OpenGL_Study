@@ -4,6 +4,11 @@ set(CMAKE_CXX_STANDARD 20)
 
 # libraries
 
+# stb_image
+add_library(stb_image
+        libraries/stb_image/stb_image.cpp
+)
+
 # glfw
 add_subdirectory(libraries/glfw-3.4)
 
@@ -25,11 +30,13 @@ add_executable(OpenGL_Study
 target_link_libraries(OpenGL_Study
         glfw
         glad
+        stb_image
 )
 
 target_include_directories(OpenGL_Study
         PRIVATE libraries/glfw-3.4/include/GLFW
         PRIVATE libraries/glad/include/glad/
         PRIVATE libraries/glad/include/KHR/
+        PRIVATE libraries/stb_image/
 )
 

@@ -60,6 +60,10 @@ public:
         glUniform3f(glGetUniformLocation(ID, name.c_str()), v0, v1, v2);
     }
 
+    void setInt (const std::string& name, int v0) const {
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), v0);
+    }
+
     void deleteShader() {
         glDeleteProgram(ID);
         ID = 0;
