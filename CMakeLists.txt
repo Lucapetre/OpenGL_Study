@@ -4,6 +4,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 # libraries
 
+# glm
+add_subdirectory(libraries/glm)
+
 # stb_image
 add_library(stb_image
         libraries/stb_image/stb_image.cpp
@@ -24,13 +27,14 @@ target_include_directories(glad
 # main program
 add_executable(OpenGL_Study
         src/Main.cpp
-        src/Shader.h
+        src/Shader.hpp
 )
 
 target_link_libraries(OpenGL_Study
         glfw
         glad
         stb_image
+        glm
 )
 
 target_include_directories(OpenGL_Study
@@ -38,5 +42,6 @@ target_include_directories(OpenGL_Study
         PRIVATE libraries/glad/include/glad/
         PRIVATE libraries/glad/include/KHR/
         PRIVATE libraries/stb_image/
+        PRIVATE libraries/glm/glm
 )
 

@@ -3,8 +3,11 @@
 #include <cmath>
 #include "glad.h"
 #include "glfw3.h"
-#include "Shader.h"
+#include "Shader.hpp"
 #include "stb_image.h"
+#include "glm.hpp"
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"
 
 // glfw callbacks
 // --------------
@@ -16,7 +19,7 @@ void processInput(GLFWwindow* window) {
 }
 int main() {
 
-    // glfw boilerplate
+    // glfw boilerplateq
     // ----------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -44,16 +47,46 @@ int main() {
     // vertex input / vertex attributes linking
     // -----------
     float vertices[] = {
-        // positions        // colors         // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right: red
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right: green
-       -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left: blue
-       -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left: yellow
-   };
-    unsigned int indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        // positions          // tex coords
+        // Front face
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f,
+        // Back face
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 1.0f,
+        // Left face
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f,
+        // Right face
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 1.0f,
+        // Top face
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f,
+        // Bottom face
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   1.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 1.0f
     };
+    unsigned int indices[] = {
+        0,  1,  2,  2,  3,  0,   // Front
+        4,  5,  6,  6,  7,  4,   // Back
+        8,  9, 10, 10, 11,  8,   // Left
+       12, 13, 14, 14, 15, 12,   // Right
+       16, 17, 18, 18, 19, 16,   // Top
+       20, 21, 22, 22, 23, 20    // Bottom
+   };
     GLuint VAO, VBO, EBO;
 
     glGenVertexArrays(1, &VAO);
@@ -64,20 +97,18 @@ int main() {
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     // generating textures
     // -------------------
     int width, height, nrChannels;
-    unsigned char* textureData = stbi_load("../textures/container.jpg", &width, &height, &nrChannels, 0);
     GLuint texture0, texture1;
 
     stbi_set_flip_vertically_on_load(true);
+    unsigned char* textureData = stbi_load("../textures/container.jpg", &width, &height, &nrChannels, 0);
     glGenTextures(1, &texture0);
     glBindTexture(GL_TEXTURE_2D, texture0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -101,39 +132,45 @@ int main() {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture1);
 
+    // coordinate systems / linear transformations
+    // ------------------------------------------
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 16.0f / 10.0f, 0.1f, 100.0f);
+
     // shader creating
     // ---------------
     Shader shader("../shaders/shader.vert", "../shaders/shader.frag");
     shader.use();
-    std::string uniformName = "testUniformColor";
     shader.setInt("texture0", 0);
     shader.setInt("texture1", 1);
-
+    shader.setMat4("model", model);
+    shader.setMat4("view", view);
+    shader.setMat4("projection", projection);
 
     // render loop
     // ----------
     // the line below -> obtain a non filled rectangle
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
         // input processing
         // ---------------
         processInput(window);
 
-        // update uniforms values
+        // update uniforms values / apply linear transformations
         // ----------------------
         float time = glfwGetTime();
-        float greenValue = sin(time) + 1.0f;
-        float redValue = cos(time) + 1.0f;
-        float blueValue = (sin(time) + cos(time)) / 2.0f;
-        shader.setVec3(uniformName, redValue, greenValue, blueValue);
-
+        model = glm::rotate(glm::mat4(1.0f), glm::radians(time) * 50.0f, glm::vec3(0.5f, 1.0f, 0.0f));
+        shader.setMat4("model", model);
 
         // rendering commands
         // --------------------
         glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         // check and call events / buffer swaping
         // ---------------------------------------
