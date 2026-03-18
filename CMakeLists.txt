@@ -28,6 +28,7 @@ target_include_directories(glad
 add_executable(OpenGL_Study
         src/Main.cpp
         src/Shader.hpp
+        src/Camera.hpp
 )
 
 target_link_libraries(OpenGL_Study
