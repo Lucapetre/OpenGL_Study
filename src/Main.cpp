@@ -2,12 +2,16 @@
 #include <fstream>
 #include <cmath>
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "glad.h"
 #include "glfw3.h"
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "stb_image.h"
 #include "glm.hpp"
+#include "gtx/integer.hpp"
+
 
 // camera system
 // ------------
@@ -47,7 +51,19 @@ int main() {
     // ----------------------------
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(2880, 1800, "OpenGL Study", nullptr, nullptr);
+    const auto monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    float xScale, yScale;
+    glfwGetMonitorContentScale(monitor, &xScale, &yScale);
+
+    int windowWidth = mode->width / xScale / 1.2;
+    int windowHeight = mode->height / yScale / 1.2;
+
+    int viewportWidth = windowWidth * xScale;
+    int viewportHeight = windowHeight * yScale;
+
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight,
+        "OpenGL Study", nullptr, nullptr);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!window) {
@@ -62,7 +78,7 @@ int main() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << '\n';
     }
-    glViewport(0, 0, 2800, 1800);
+    glViewport(0, 0, viewportWidth, viewportHeight);
 
     // vertex input / vertex attributes linking
     // -----------
