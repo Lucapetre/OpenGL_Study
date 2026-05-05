@@ -2,16 +2,12 @@
 #include <fstream>
 #include <cmath>
 
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include "glad.h"
 #include "glfw3.h"
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "stb_image.h"
 #include "glm.hpp"
-#include "gtx/integer.hpp"
-
 
 // camera system
 // ------------
@@ -25,7 +21,6 @@ static float lastX = 1440, lastY = 900;
 void frameBufferSizeCallBack(GLFWwindow* window, int width, int height);
 void mouseCallBack(GLFWwindow* window, double xpos, double ypos);
 void scrollCallBack(GLFWwindow* window, double xoffset, double yoffset);
-
 
 // input
 // -----
